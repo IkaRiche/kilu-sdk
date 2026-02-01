@@ -1,0 +1,39 @@
+{
+    "name": "@kilu/sdk",
+    "version": "0.1.0",
+    "description": "TypeScript SDK for Kilu DeTAK Protocol",
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "test": "bun test"
+    },
+    "keywords": [
+        "kilu",
+        "detak",
+        "agent",
+        "authority",
+        "sdk"
+    ],
+    "author": "Kilu Team",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "bun-types": "^1.0.0",
+        "tsup": "^8.0.1",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "@noble/ed25519": "^2.3.0",
+        "@noble/hashes": "^2.0.1"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js"
+        }
+    }
+}
