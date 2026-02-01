@@ -15,32 +15,24 @@ bun add @kilu/sdk
 ## Quick Start
 
 ```typescript
-import { KiluClient, generateIdentityToken } from "@kilu/sdk";
+import { KiluClient } from "@kilu/sdk";
 
-// 1. Get Moltbook identity token
-const tokenResult = await generateIdentityToken(
-    process.env.MOLTBOOK_API_KEY!,
-    "authority.kilu.network"
-);
+// Obtain a Moltbook identity token per Moltbook developer docs.
+const moltToken = process.env.MOLTBOOK_IDENTITY_TOKEN!;
 
-// 2. Initialize client
-const client = new KiluClient({ 
-    apiUrl: "https://authority.kilu.network" 
-});
-client.setMoltIdentity(tokenResult.identity_token!);
+const client = new KiluClient({ apiUrl: "https://authority.kilu.network" });
+client.setMoltIdentity(moltToken);
 
-// 3. Submit intent for authorization
 const result = await client.submitIntent({
     action: "payment",
     amount: 100,
-    currency: "EUR"
+    currency: "EUR",
 });
 
-console.log("Decision:", result.decision);
-if (result.receipt) {
-    console.log("Receipt hash:", result.receipt.intent_hash);
-}
+console.log(result.decision);
 ```
+
+> **Note**: Token is opaque bearer; SDK does not decode, persist, or log it.
 
 ## API Reference
 
@@ -85,7 +77,7 @@ const result = await verifyReceiptForIntent(intent, receipt, authorityPublicKey)
 ## Resources
 
 - [KiLU Authority](https://authority.kilu.network) — Main service
-- [Moltbook Developers](https://moltbook.com/developers) — Identity provider
+- [Moltbook Developers](https://www.moltbook.com/developers) — Identity provider
 
 ---
 

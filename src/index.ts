@@ -9,7 +9,7 @@
  */
 
 // Client
-export { KiluClient, KiluClientOptions, AAXClient, AAXClientOptions } from "./client";
+export { KiluClient, KiluClientOptions } from "./client";
 
 // Errors
 export { ApiError, AuthError, RateLimitError } from "./errors";
@@ -26,12 +26,3 @@ export {
 
 // Reference canonicalization (for verification only)
 export { canonicalize } from "./canonical";
-
-// Moltbook identity helpers
-export {
-    MoltbookAgent,
-    VerifyIdentityResponse,
-    GenerateTokenResponse,
-    verifyMoltbookIdentity,
-    generateIdentityToken
-} from "./moltbook";
