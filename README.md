@@ -2,7 +2,23 @@
 
 TypeScript SDK for KiLU Authority — the deterministic execution authority for AI agents.
 
-**"Moltbook gives identity. KiLU Authority gives authority."**
+**"The cloud orchestrates. The phone authorizes. The Hub executes only with cryptographic mandate."**
+
+<!-- SDK status: Shipped v0.1.0 — verified integration surface -->
+
+## What This SDK Does
+
+`@kilu/sdk` is the integration surface for external systems that want to submit intents for KiLu authority review and verify cryptographic receipts from the KiLu Control Plane.
+
+It **does not**:
+- Make execution decisions
+- Store or decode bearer tokens
+- Bypass the authority loop
+
+It **does**:
+- Submit intents (`submitIntent`) to the KiLu Control Plane
+- Verify Ed25519-signed receipts (`verifyReceipt`, `verifyReceiptForIntent`)
+- Canonicalize intent payloads (`canonical.ts`) for deterministic hashing
 
 ## Installation
 
@@ -33,6 +49,11 @@ console.log(result.decision);
 ```
 
 > **Note**: Token is opaque bearer; SDK does not decode, persist, or log it.
+
+> **Endpoint & Identity Status:**
+> - `authority.kilu.network` is the public KiLu Control Plane endpoint (early access).
+> - Moltbook (`www.moltbook.com`) is the v0.1 identity provider model — opaque bearer, not decoded by SDK.
+> - For current integration status or to request access, see [KiLu-Network](https://github.com/IkaRiche/KiLu-Network).
 
 ## API Reference
 
@@ -69,15 +90,31 @@ const result = await verifyReceiptForIntent(intent, receipt, authorityPublicKey)
 ## Authorization Decisions
 
 | Decision | Meaning |
-|----------|---------|
+|----------|---------| 
 | `ALLOW` | Intent approved, receipt issued |
 | `DENY` | Intent rejected by policy |
 | `HUMAN_APPROVAL_REQUIRED` | Needs manual approval |
 
+## KiLu Ecosystem
+
+This SDK is part of the KiLu authority fabric:
+
+| Component | Role | Repo |
+|---|---|---|
+| **kilu-sdk** (this) | Integration surface for external agents | Public |
+| **kilu-pocket-agent** | Android Approver + Hub (validation runtime) | [Public](https://github.com/IkaRiche/kilu-pocket-agent) |
+| **KiLu-Network** | Control Plane, governance, canonical docs | Private |
+
+- Android Approver = human authority device
+- Android Hub = validation runtime (not production load)
+- Linux Hub = production execution path (R3 target)
+
+See [kilu-pocket-agent](https://github.com/IkaRiche/kilu-pocket-agent) for the full system context.
+
 ## Resources
 
-- [KiLU Authority](https://authority.kilu.network) — Main service
-- [Moltbook Developers](https://www.moltbook.com/developers) — Identity provider
+- [kilu-pocket-agent](https://github.com/IkaRiche/kilu-pocket-agent) — Android wedge + authority device
+- [Moltbook Developers](https://www.moltbook.com/developers) — Identity provider (v0.1 model)
 
 ---
 
