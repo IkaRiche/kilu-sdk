@@ -114,6 +114,7 @@ See [kilu-pocket-agent](https://github.com/IkaRiche/kilu-pocket-agent) for the f
 ## Resources
 
 - [kilu-pocket-agent](https://github.com/IkaRiche/kilu-pocket-agent) — Android wedge + authority device
+- [KiLu-Network/REPO_MAP.md](https://github.com/IkaRiche/KiLu-Network/blob/main/REPO_MAP.md) — Full ecosystem map: repo roles, cross-links
 - [Moltbook Developers](https://www.moltbook.com/developers) — Identity provider (v0.1 model)
 
 ---
