@@ -1,156 +1,185 @@
-# KiLU Authority: The Authority Layer for AI Agents
+[![npm version](https://img.shields.io/npm/v/@kilu-control/sdk.svg)](https://www.npmjs.com/package/@kilu-control/sdk)
+[![license](https://img.shields.io/npm/l/@kilu-control/sdk.svg)](./LICENSE)
+[![examples](https://img.shields.io/badge/examples-3%20live%20proofs-blue)](./examples/)
 
-**"Moltbook gives identity. KiLU Authority gives authority."**
+**Agents decide. KiLu authorizes.**
 
-KiLU Authority is an infrastructure gateway that provides deterministic transaction security for autonomous agents. Built on the **DeTAK** kernel.
+Add an `ALLOW / REQUIRE_CONFIRM / BLOCK` policy gate *before* your agent executes anything — tool calls, browser actions, shell commands, or API mutations.
 
-### What this is NOT:
-- Does not host, run, or control agents
-- Does not execute actions (receipt-only)
-- Does not persist or log Moltbook identity tokens
+> **Status:** Published on npm · 3 live proofs · Real control plane path · Decisions durably recorded.
 
-## Why KiLU?
-
-In the modern agent economy, Identity is not enough. For an agent to perform financially significant actions, they need **Authority**, constrained by clear **Policies**.
-
-## Live Integration Demos
-
-KiLU works as a drop-in authority layer for any agent framework. Here's what it looks like in practice:
-
-### MCP Tool Gating
-
-Every MCP tool call passes through KiLU's deterministic gate — ALLOW, REQUIRE_CONFIRM, or BLOCK — before execution.
-
-<a href="https://kilu.network/mcp-tool-gating">
-  <img src="https://kilu.network/assets/videos/mcp-demo-v2.webp" alt="KiLu MCP Tool Gating Demo" width="720" />
-</a>
-
-### LangGraph Approval Workflow
-
-KiLu intercepts LangGraph tool nodes and pauses execution for human review when policy requires it.
-
-<a href="https://kilu.network/langgraph-approval">
-  <img src="https://kilu.network/assets/videos/langgraph-demo-v2.webp" alt="KiLu LangGraph Approval Demo" width="720" />
-</a>
-
-### Browser Action Control
-
-Playwright and browser-use actions are gated per-click — safe navigation proceeds, risky interactions require confirmation or are blocked entirely.
-
-<a href="https://kilu.network/browser-action-control">
-  <img src="https://kilu.network/assets/videos/browser-demo-v2.webp" alt="KiLu Browser Action Control Demo" width="720" />
-</a>
-
-## Architectural Principles
-
-| Principle | Description |
-|-----------|-------------|
-| **Deterministic** | Decisions are made by a Finite State Machine (FSM), not a probabilistic LLM model |
-| **Receipt-Only** | We issue signed permissions, we do not execute code |
-| **Human-in-the-Loop** | Integrated approval mechanism for high-risk operations |
-| **Audit-Ready** | Every receipt is stored in an immutable log for future auditing |
-
-## Quick Start
-
-### 1. Get Moltbook Identity Token
-
-```bash
-curl -X POST https://moltbook.com/api/v1/agents/me/identity-token \
-  -H "Authorization: Bearer YOUR_MOLTBOOK_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"audience": "authority.kilu.network"}'
 ```
-
-### 2. Submit Intent to KiLU Authority
-
-```bash
-curl -X POST https://authority.kilu.network/v1/intent \
-  -H "Authorization: Bearer <moltbook_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "action": "payment",
-    "target": "stripe_api",
-    "amount": 100,
-    "currency": "EUR"
-  }'
+┌─────────┐     ┌──────────────────┐     ┌──────────┐     ┌─────────────────────────────────┐
+│  Agent   │────▶│  Proposed Action  │────▶│   KiLu   │────▶│  ALLOW / REQUIRE_CONFIRM / BLOCK │
+│ (model)  │     │  (tool, browser,  │     │ (policy  │     │                                 │
+│          │     │   shell, API)     │     │  gate)   │     │  ✅ Execute  ⏸ Pause  🚫 Block  │
+└─────────┘     └──────────────────┘     └──────────┘     └─────────────────────────────────┘
 ```
-
-### 3. Receive Signed Receipt
-
-```json
-{
-  "decision": "ALLOW",
-  "receipt": {
-    "intent_hash": "a1b2c3d4e5f6...",
-    "signature": "base64...",
-    "version": "0.1.0",
-    "timestamp": 1706803200,
-    "authority_id": "kilu_authority_prod"
-  }
-}
-```
-
-## Authorization Decisions
-
-| Decision | HTTP Status | Meaning |
-|----------|-------------|---------|
-| `ALLOW` | 200 | Intent approved, receipt issued |
-| `DENY` | 403 | Intent rejected based on policy |
-| `HUMAN_APPROVAL_REQUIRED` | 200 | Requires manual approval |
-
-## SDK Integration
-
-```typescript
-import { KiluClient, generateIdentityToken } from "@kilu/sdk";
-
-// 1. Get Moltbook identity token
-const tokenResult = await generateIdentityToken(
-    process.env.MOLTBOOK_API_KEY!,
-    "authority.kilu.network"
-);
-
-// 2. Initialize client
-const client = new KiluClient({ 
-    apiUrl: "https://authority.kilu.network" 
-});
-client.setMoltIdentity(tokenResult.identity_token!);
-
-// 3. Submit intent
-const result = await client.submitIntent({
-    action: "payment",
-    amount: 100,
-    currency: "EUR"
-});
-
-console.log("Decision:", result.decision);
-```
-
-## Developer Resources
-
-- [KiLU SDK](https://github.com/IkaRiche/kilu-authority) — TypeScript SDK for integration
-- [Moltbook Developers](https://moltbook.com/developers) — Identity Provider docs
-- [Moltbook Auth Instructions](https://moltbook.com/auth.md?app=KiLU%20Authority&endpoint=https://authority.kilu.network/v1/intent)
-
-## Technology Stack
-
-- **Runtime**: Cloudflare Workers
-- **Framework**: Hono
-- **Database**: Cloudflare D1
-- **Identity**: Moltbook
-- **Crypto**: Ed25519 (noble-ed25519)
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `MOLTBOOK_APP_KEY` | Your Moltbook developer app key (`moltdev_...`) |
-| `MOLTBOOK_AUDIENCE` | Your service domain for audience restriction |
 
 ---
 
-KiLU® and DeTAK™ are trademarks.
-This license does not grant rights to use the trademarks in competing services.
+## 🚀 Quickstart
+```bash
+npm install @kilu-control/sdk
+```
+
+```typescript
+import { KiluClient, IntentPayload } from '@kilu-control/sdk';
+
+const kilu = new KiluClient({
+  baseUrl: process.env.KILU_BASE_URL!,
+  apiKey: process.env.KILU_API_KEY!,
+});
+
+async function executeAgentTool(toolName: string, args: Record<string, any>) {
+  const intent: IntentPayload = {
+    actor: 'agent-01',
+    action: toolName,
+    target: JSON.stringify(args),
+  };
+
+  const auth = await kilu.submitIntent(intent);
+
+  if (auth.outcome === 'BLOCK') {
+    throw new Error(`Execution blocked: ${auth.reason}`);
+  }
+
+  if (auth.outcome === 'REQUIRE_CONFIRM') {
+    return triggerHumanApprovalFlow(intent, auth.pending_approval_id);
+  }
+
+  // ALLOW -> execute with cryptographic receipt
+  return doActualExecution(toolName, args);
+}
+```
+
+---
+
+## ⚡ Live Integration Proofs
+Every example runs locally with a mock authority layer — or connects to a **real production control plane** when `KILU_API_KEY` is set.
+
+### 🛠️ MCP Tool Gate
+Wrap MCP tool handlers so destructive actions pause for human approval before execution.
+→ [`examples/mcp-tool-gate`](./examples/mcp-tool-gate/)
+
+<a href="https://kilu.network/mcp-tool-gating">
+  <img src="https://kilu.network/assets/videos/mcp-demo-v2.webp" alt="KiLu MCP Tool Gating — ALLOW / REQUIRE_CONFIRM / BLOCK" width="720" />
+</a>
+
+### 🤖 LangGraph Approval Gate
+Drive LangGraph's `interrupt()` flow with a deterministic policy gate instead of fragile prompt checks.
+→ [`examples/langgraph-approval-gate`](./examples/langgraph-approval-gate/)
+
+<a href="https://kilu.network/langgraph-approval">
+  <img src="https://kilu.network/assets/videos/langgraph-demo-v2.webp" alt="KiLu LangGraph Approval Gate — deterministic interrupt()" width="720" />
+</a>
+
+### 🌐 Browser Action Control
+Intercept Playwright/Puppeteer actions with a `beforeAction()` hook to prevent autonomous hallucinations.
+→ [`examples/browser-approval`](./examples/browser-approval/)
+
+<a href="https://kilu.network/browser-action-control">
+  <img src="https://kilu.network/assets/videos/browser-demo-v2.webp" alt="KiLu Browser Action Control — per-click gate" width="720" />
+</a>
+
+---
+
+## How KiLu Compares
+| Approach | What it does | What it misses |
+|---|---|---|
+| Prompt guardrails | Hints the model via system prompt | Fragile, bypassable, no enforcement |
+| Logs / audit trails | Records what happened | Too late — damage already done |
+| HITL on every action | Adds manual review | Approval fatigue, no policy semantics |
+| `securitySchemes` / OAuth | Controls access to APIs | No per-action policy, no decision audit |
+| **KiLu** | **Decides before execution** | **Authority layer with receipts** |
+
+---
+
+## Typical Outcomes
+| Outcome | When | Example |
+|---|---|---|
+| **`ALLOW`** | Low-risk action within policy | `file.read`, `browser.hover`, `mcp.read` |
+| **`REQUIRE_CONFIRM`** | Valid action, needs human approval | `email.send`, `shell.exec`, `payment.charge` |
+| **`BLOCK`** | Violates current policy | `system.rm`, `database.drop`, `shell.exec.dangerous` |
+
+---
+
+## Use Cases
+**Use KiLu when your agent currently...**
+
+- 🔧 Calls MCP tools directly without context checks
+- 🌐 Clicks or browses without human approval
+- 💻 Executes shell commands without a policy gate
+- 🔄 Performs API mutations without confirmation
+- 📜 Lacks verifiable authorization records
+
+---
+
+## What KiLu Is Not
+KiLu is **not** a chat agent, planner, workflow builder, or browser automation wrapper.
+
+KiLu is strictly the **authority layer** for autonomous execution.
+Your model proposes actions. KiLu decides whether they run.
+
+---
+
+## Trust & Verification
+- ✅ 3 runnable integration proofs (MCP, LangGraph, Browser)
+- ✅ Mock authority for local development
+- ✅ Real production control plane path (`POST /v1/intent`)
+- ✅ Ed25519-signed execution receipts
+- ✅ Durable decision log (D1-backed audit trail)
+- ✅ Deterministic policy evaluation (no LLM in the decision path)
+
+---
+
+## FAQ
+<details>
+<summary><strong>Is KiLu another agent framework?</strong></summary>
+
+No. KiLu does not replace LangGraph, CrewAI, AutoGen, or any other agent framework. It sits *between* your agent's decision and execution — as a policy gate, not a planner.
+</details>
+
+<details>
+<summary><strong>Does it replace MCP or LangGraph?</strong></summary>
+
+No. KiLu integrates with both. It wraps MCP tool handlers and drives LangGraph's `interrupt()` flow. See the live examples.
+</details>
+
+<details>
+<summary><strong>Do examples require a live backend?</strong></summary>
+
+No. Every example ships with a local mock authority layer. Set `KILU_API_KEY` and `KILU_BASE_URL` to connect to a real control plane.
+</details>
+
+<details>
+<summary><strong>What does REQUIRE_CONFIRM mean?</strong></summary>
+
+The action is valid but needs explicit human approval before execution. KiLu returns a `pending_approval_id` that you can forward to a human reviewer.
+</details>
+
+<details>
+<summary><strong>Can I run it against a real control plane?</strong></summary>
+
+Yes. The SDK connects to a production Cloudflare Worker endpoint. Decisions are durably recorded and signed with Ed25519 receipts.
+</details>
+
+---
+
+## Repository Structure
+```
+kilu-sdk/
+├── src/                          # SDK source
+├── examples/
+│   ├── mcp-tool-gate/            # MCP integration proof
+│   ├── langgraph-approval-gate/  # LangGraph integration proof
+│   └── browser-approval/         # Browser automation proof
+├── docs/
+│   └── why-kilu.md               # Architecture and reasoning model
+└── LICENSE
+```
+
+---
 
 ## License
-
-MIT
+MIT © [KiLu Network](https://kilu.network)
