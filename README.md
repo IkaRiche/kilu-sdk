@@ -4,9 +4,9 @@
 
 **Agents decide. KiLu authorizes.**
 
-Add an `ALLOW / REQUIRE_CONFIRM / BLOCK` policy gate *before* your agent executes anything — tool calls, browser actions, shell commands, or API mutations.
+KiLu is an execution authority layer for AI systems. It places an explicit decision boundary before tool calls, browser actions, and other high-risk execution paths.
 
-> **Status:** Early, usable. Real control plane path available. Decisions durably recorded.
+> **Status:** Published SDK · Runnable examples · Real control plane path · Durable decision records
 
 ```mermaid
 flowchart LR
@@ -21,6 +21,8 @@ flowchart LR
 ---
 
 ## 🚀 Quickstart
+
+Start with one execution surface: one tool, one browser action, or one approval path.
 
 ```bash
 npm install @kilu-control/sdk
@@ -60,8 +62,6 @@ async function executeAgentTool(toolName: string, args: Record<string, any>) {
 
 ## ⚡ Live Integration Proofs
 
-Every example runs locally with a mock authority layer — or connects to a **real production control plane** when `KILU_API_KEY` is set.
-
 ### 🛠️ MCP Tool Gate
 Wrap MCP tool handlers so destructive actions pause for human approval before execution.
 <br><img src="https://kilu.network/assets/videos/mcp-demo-v2.webp" alt="MCP Tool Gate" width="600"/>
@@ -76,6 +76,16 @@ Drive LangGraph's `interrupt()` flow with a deterministic policy gate instead of
 Intercept Playwright/Puppeteer actions with a `beforeAction()` hook to prevent autonomous hallucinations.
 <br><img src="https://kilu.network/assets/videos/browser-demo-v2.webp" alt="Browser Approval" width="600"/>
 → [`examples/browser-approval`](./examples/browser-approval/)
+
+All examples run locally with a mock authority layer and can be pointed at a real KiLu control plane.
+
+---
+
+## Developer References
+
+* [API Reference](./docs/api-reference.md)
+* [Receipts & Verification](./docs/receipts-and-verification.md)
+* [Examples](./examples/README.md)
 
 ---
 
@@ -116,7 +126,11 @@ Intercept Playwright/Puppeteer actions with a `beforeAction()` hook to prevent a
 
 ## What KiLu Is Not
 
-KiLu is **not** a chat agent, planner, workflow builder, or browser automation wrapper.
+KiLu is **not**:
+- an agent framework
+- a planner
+- a browser automation library
+- a general-purpose policy platform
 
 KiLu is strictly the **authority layer** for autonomous execution.
 Your model proposes actions. KiLu decides whether they run.
@@ -132,13 +146,7 @@ Your model proposes actions. KiLu decides whether they run.
 - ✅ Durable decision log (D1-backed audit trail)
 - ✅ Deterministic policy evaluation (no LLM in the decision path)
 
----
-
-## Documentation
-
-- [API Reference](./docs/api-reference.md) — SDK API surface & core types
-- [Receipts & Verification](./docs/receipts-and-verification.md) — How the cryptographic receipts work
-- [Architecture & Reasoning](./docs/why-kilu.md) — Why KiLu is built this way
+Read more: [API Reference](./docs/api-reference.md) · [Receipts & Verification](./docs/receipts-and-verification.md) · [Examples](./examples/README.md)
 
 ---
 
@@ -147,52 +155,36 @@ Your model proposes actions. KiLu decides whether they run.
 <details>
 <summary><strong>Is KiLu another agent framework?</strong></summary>
 
-No. KiLu does not replace LangGraph, CrewAI, AutoGen, or any other agent framework. It sits *between* your agent's decision and execution — as a policy gate, not a planner.
+No. It sits *between* your agent and execution as a policy gate. KiLu does not replace LangGraph, CrewAI, or AutoGen.
 </details>
 
 <details>
 <summary><strong>Does it replace MCP or LangGraph?</strong></summary>
 
-No. KiLu integrates with both. It wraps MCP tool handlers and drives LangGraph's `interrupt()` flow. See the live examples.
+No. It wraps MCP tool handlers and drives LangGraph's `interrupt()` flow.
 </details>
 
 <details>
 <summary><strong>Do examples require a live backend?</strong></summary>
 
-No. Every example ships with a local mock authority layer. Set `KILU_API_KEY` and `KILU_BASE_URL` to connect to a real control plane.
+No. Every example ships with a local mock authority layer that you can easily swap for a real control plane.
 </details>
 
 <details>
 <summary><strong>What does REQUIRE_CONFIRM mean?</strong></summary>
 
-The action is valid but needs explicit human approval before execution. KiLu returns a `pending_approval_id` that you can forward to a human reviewer.
+The action is valid but needs explicit human approval before execution. Forward the `pending_approval_id` to a reviewer.
 </details>
 
 <details>
 <summary><strong>Can I run it against a real control plane?</strong></summary>
 
-Yes. The SDK connects to a production Cloudflare Worker endpoint. Decisions are durably recorded and signed with Ed25519 receipts.
+Yes. Decisions are durably recorded via Cloudflare Workers and signed with Ed25519 receipts.
 </details>
 
 ---
 
-## Repository Structure
-
-```
-kilu-sdk/
-├── src/                          # SDK source
-├── examples/
-│   ├── mcp-tool-gate/            # MCP integration proof
-│   ├── langgraph-approval-gate/  # LangGraph integration proof
-│   └── browser-approval/         # Browser automation proof
-├── docs/
-│   ├── why-kilu.md               # Architecture and reasoning model
-│   ├── api-reference.md          # SDK API surface & types
-│   └── receipts-and-verification.md # Deep-dive on cryptographic receipts
-└── LICENSE
-```
-
----
+Status: early, usable, and actively evolving. Real control plane path available.
 
 ## License
 
