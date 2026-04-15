@@ -1,219 +1,323 @@
-# kilu-sdk
+# KiLu SDK
 
-Public TypeScript SDK for integrating external agents and planners into KiLu's approval-bound execution model.
+**Authority for autonomous execution.**
 
-`kilu-sdk` is the bridge between agent intent and KiLu authority. It allows an external client to submit intents, receive authorization decisions, and verify returned receipts — without giving the agent raw, unconstrained execution authority.
+KiLu SDK adds an authority layer between an AI agent and real execution.
 
-## What This Repository Is
+It does not replace your model, planner, or agent framework.  
+It sits between **intent** and **execution**.
 
-This repository contains the public TypeScript integration layer for KiLu.
+## Why KiLu
 
-It is intended for:
+Modern agents can reason well enough to be useful.  
+The real problem is not reasoning anymore. The real problem is **execution authority**.
 
-- external planners
-- agent frameworks
-- orchestration layers
-- tools that need to request execution authority from KiLu
+Most agent stacks still look like this:
 
-The SDK helps a client:
+`Model -> Tool / API / UI -> Execute`
 
-- submit an intent for authorization
-- receive a decision (`ALLOW` / `DENY` / `HUMAN_APPROVAL_REQUIRED`)
-- handle human-approval flows
-- verify returned receipts instead of trusting opaque callbacks or logs
+KiLu enforces a safer pattern:
 
-## What This Repository Is Not
+`Model -> Proposed Action -> KiLu -> ALLOW / REQUIRE_CONFIRM / BLOCK -> Execute`
 
-This repository is not the whole KiLu platform.
+That means your model can propose actions, but it does **not** authorize itself to act.
 
-It is not:
+## What KiLu gives you
 
-- the control plane implementation
-- the Android authority device
-- the execution runtime
-- a complete security solution by itself
+For every proposed action, KiLu returns one of three outcomes:
 
-Importing the SDK does not automatically make an unconstrained agent safe. The SDK becomes meaningful when execution is actually routed through KiLu-controlled authority and runtime boundaries.
+- `ALLOW`
+- `REQUIRE_CONFIRM`
+- `BLOCK`
 
-## Current Status
+This lets you keep reasoning flexible while making execution:
 
-`kilu-sdk` is a live public integration surface for early-access KiLu authority flows.
+- governed
+- bounded
+- auditable
+- model-agnostic
 
-- package published: `@kilu/sdk` v0.1
-- integration surface: `submitIntent`, `verifyReceipt`, `verifyReceiptForIntent`
-- identity model: opaque bearer token (SDK does not decode, persist, or log it)
+## Use KiLu when...
 
-The public hostname and identity wording used in this README reflect the current v0.1 integration model. They should be read as the public SDK-facing surface, not as a complete map of KiLu's internal deployment topology.
+Use KiLu if your agent currently:
 
-## Decision Model
+- calls tools directly
+- clicks or browses without approval
+- executes shell commands without a policy gate
+- performs API mutations without human confirmation
+- lacks verifiable authorization records
+- mixes reasoning with execution authority
 
-KiLu separates intent from authority.
+KiLu is especially useful for:
 
-An agent may propose an action, but KiLu returns one of three decision classes:
+- MCP tool gating
+- browser agents
+- shell / infra agents
+- approval-heavy workflows
+- high-risk API actions
+- regulated or auditable agent systems
 
-| Decision | Meaning |
-|---|---|
-| `ALLOW` | Intent approved, receipt issued |
-| `DENY` | Intent rejected by policy |
-| `HUMAN_APPROVAL_REQUIRED` | Flagged for human approval before execution proceeds |
+## Not another agent framework
 
-This model keeps cognition and execution authority as separate concerns. The SDK is the interface to that boundary — not a bypass of it.
+KiLu is **not**:
 
-## What the SDK Enables
+- a chat agent
+- a planner
+- a browser automation framework
+- a workflow builder
+- a general-purpose orchestration platform
 
-With `kilu-sdk`, an external agent or planner can:
+KiLu is the **authority layer** for autonomous execution.
 
-- ask KiLu whether an action may proceed
-- receive a structured, actionable decision
-- defer high-risk steps to explicit human approval
-- verify returned receipts against known public keys
-- integrate into a KiLu authority flow without rewriting the agent itself
+## 60-second example
 
-## Receipt Verification
+```ts
+import { KiLuClient } from "@kilu/sdk";
 
-The SDK supports cryptographic receipt verification.
+const kilu = new KiLuClient({
+  baseUrl: process.env.KILU_BASE_URL!,
+  apiKey: process.env.KILU_API_KEY!,
+});
 
-This matters because KiLu is not just about deciding whether an action may proceed — it is also about producing evidence that the decision and execution path can be checked after the fact.
+const decision = await kilu.submitIntent({
+  actor: "agent:browser",
+  action: "browser.click",
+  target: "button#confirm-transfer",
+  context: {
+    session_id: "sess_123",
+    risk_level: "high",
+    environment: "production",
+  },
+});
 
-That is the difference between ordinary agent middleware and an approval-bound execution model.
+switch (decision.outcome) {
+  case "ALLOW":
+    // execute action
+    break;
 
-```typescript
-import { verifyReceipt, verifyReceiptForIntent } from "@kilu/sdk";
+  case "REQUIRE_CONFIRM":
+    // show approval flow
+    break;
 
-// Verify signature only
-const valid = await verifyReceipt(receipt, authorityPublicKey);
+  case "BLOCK":
+    // stop execution and log
+    break;
+}
+```
 
-// Verify signature + hash match against original intent
-const result = await verifyReceiptForIntent(intent, receipt, authorityPublicKey);
+## Core idea
+
+KiLu separates **cognition** from **action**.
+
+Your model may generate:
+
+* plans
+* tool requests
+* browser actions
+* shell commands
+* API mutations
+
+KiLu determines whether those actions may be:
+
+* executed immediately
+* escalated for human confirmation
+* blocked before execution
+
+## Design principles
+
+### 1. Reasoning is not authority
+
+A model can propose an action.
+It should not directly grant itself the right to execute it.
+
+### 2. Human approval is first-class
+
+Some actions should never execute without explicit confirmation.
+
+### 3. Execution is bounded
+
+Authorization should be constrained by policy, scope, and context.
+
+### 4. Records matter
+
+A useful authority layer should produce durable, auditable decisions.
+
+### 5. Models are replaceable
+
+Today you may use hosted reasoning APIs.
+Tomorrow you may use local models.
+KiLu stays in the same place in the control path.
+
+## Security model
+
+KiLu is designed around a simple trust boundary:
+
+* the LLM is a reasoning component
+* KiLu is the authority layer
+* execution happens only after an explicit decision
+* sensitive actions can require human confirmation
+* reasoning engines remain replaceable without redesigning control
+
+In other words:
+
+**Agents decide. KiLu authorizes.**
+
+## Example integrations
+
+This repository includes focused examples for common pain points:
+
+* [`examples/mcp-tool-gate`](./examples/mcp-tool-gate)
+  Put an authority gate in front of MCP tool calls.
+
+* [`examples/langgraph-approval-gate`](./examples/langgraph-approval-gate)
+  Add policy-driven approval to LangGraph tool execution.
+
+* [`examples/browser-approval`](./examples/browser-approval)
+  Require approval before high-risk browser actions.
+
+See [`examples/README.md`](./examples/README.md) for the full list.
+
+## Typical outcomes
+
+### ALLOW
+
+Low-risk action within policy.
+
+Examples:
+
+* read-only tool calls
+* safe internal navigation
+* low-risk API reads
+
+### REQUIRE_CONFIRM
+
+Action may be valid, but requires explicit human approval.
+
+Examples:
+
+* browser checkout or payment confirmation
+* outbound email send
+* production API mutation
+* deployment actions
+* shell operations with side effects
+
+### BLOCK
+
+Action is not admissible under the current policy.
+
+Examples:
+
+* dangerous shell commands
+* forbidden external exfiltration
+* policy-violating browser actions
+* out-of-scope API mutations
+
+## Minimal API shape
+
+The SDK centers around one idea: submit a proposed action and receive a decision.
+
+```ts
+type KiLuDecision =
+  | { outcome: "ALLOW"; decisionId: string }
+  | { outcome: "REQUIRE_CONFIRM"; decisionId: string; reason?: string }
+  | { outcome: "BLOCK"; decisionId: string; reason?: string };
+
+await client.submitIntent({
+  actor: "agent:shell",
+  action: "shell.exec",
+  target: "rm -rf /tmp/cache",
+  context: {
+    working_directory: "/srv/app",
+    environment: "production",
+  },
+});
 ```
 
 ## Installation
 
 ```bash
 npm install @kilu/sdk
-# or
-bun add @kilu/sdk
 ```
 
-## Minimal Example
+## Environment
 
-```typescript
-import { KiluClient } from "@kilu/sdk";
-
-// v0.1 identity model: opaque bearer token
-// See: https://github.com/IkaRiche/KiLu-Network for current access model
-const client = new KiluClient({ apiUrl: "https://authority.kilu.network" });
-client.setMoltIdentity(process.env.KILU_IDENTITY_TOKEN!);
-
-const result = await client.submitIntent({
-  action: "fetch",
-  target: "https://example.com",
-});
-
-switch (result.decision) {
-  case "ALLOW":
-    // Proceed — authority issued receipt
-    await verifyReceipt(result.receipt, authorityPublicKey);
-    break;
-  case "DENY":
-    // Policy blocked — do not proceed
-    break;
-  case "HUMAN_APPROVAL_REQUIRED":
-    // Pause and wait for human approval signal
-    break;
-}
+```bash
+KILU_BASE_URL=https://your-kilu-control-plane.example
+KILU_API_KEY=your_api_key
 ```
 
-> **v0.1 identity note:** `authority.kilu.network` is the current public endpoint. The identity model (opaque bearer + Moltbook identity provider) reflects the v0.1 integration surface. For integration access or current deployment topology, see [KiLu-Network](https://github.com/IkaRiche/KiLu-Network).
+## Quickstart
 
-## API Reference
+1. Install the SDK
+2. Create a `KiLuClient`
+3. Wrap one high-risk action behind `submitIntent()`
+4. Handle `ALLOW / REQUIRE_CONFIRM / BLOCK`
+5. Expand coverage gradually across your execution surface
 
-### `KiluClient`
+If you are evaluating KiLu, start with one of these:
 
-```typescript
-const client = new KiluClient({
-  apiUrl: string,     // KiLu authority endpoint
-  timeoutMs?: number  // default: 10000
-});
+* browser click confirmation
+* shell command guard
+* MCP tool approval
+* external API mutation gate
+
+## Who this is for
+
+KiLu is a good fit if you are building:
+
+* agentic SaaS
+* browser agents
+* internal automation with side effects
+* enterprise copilots with approval paths
+* infra / DevOps agents
+* financial or regulated workflows
+* systems where observability alone is too late
+
+## Why this matters now
+
+The ecosystem is rapidly improving agent reasoning.
+
+The missing layer is **controlled execution**.
+
+Approval flows, audit trails, and post-hoc logs are useful, but they are not the same as an authority layer that decides whether execution may occur **before** it happens.
+
+That is the role KiLu is designed to fill.
+
+## Repository structure
+
+```text
+.
+├── src/
+├── examples/
+│   ├── mcp-tool-gate/
+│   ├── langgraph-approval-gate/
+│   └── browser-approval/
+├── docs/
+│   └── why-kilu.md
+└── README.md
 ```
 
-| Method | Description |
-|---|---|
-| `setMoltIdentity(token)` | Set bearer token for authentication |
-| `clearMoltIdentity()` | Clear stored token |
-| `hasMoltIdentity()` | Check if token is set |
-| `submitIntent(payload)` | Submit intent for authorization — returns decision + receipt |
+## Current status
 
-### `verifyReceipt(receipt, publicKey)`
+Early SDK, focused on the execution-authority pattern.
 
-Verifies the Ed25519 signature on a KiLu authority receipt. Returns `true` if valid.
+Near-term priorities:
 
-### `verifyReceiptForIntent(intent, receipt, publicKey)`
+* stable core client surface
+* sharper examples
+* stronger approval-path demos
+* clearer integration docs
+* more concrete framework adapters
 
-Verifies signature **and** confirms the receipt hash matches the original intent payload. Stronger guarantee than signature-only verification.
+## Docs
 
-## Scope Limits / Honest Boundary
+* [`docs/why-kilu.md`](./docs/why-kilu.md)
+* [`examples/README.md`](./examples/README.md)
 
-Using the SDK does not by itself secure an agent that still retains unrestricted direct access to shell, browser, network, or file system execution.
+## Positioning in one line
 
-The SDK is effective when the execution path is actually routed through KiLu-controlled authority and runtime boundaries. An agent that calls `submitIntent` but then executes independently of the decision is not meaningfully constrained.
-
-> The SDK is strongest when used to wrap existing agents whose execution surface is bounded by KiLu-controlled interfaces.
-
-## Supported Integration Modes
-
-- **Native SDK integration** — agent calls `submitIntent` directly, handles decision, verifies receipt
-- **Planner/bridge integration** — orchestration layer mediates between cognition and execution, SDK sits at the authority boundary
-- **Future gateway/runtime integration** — longer-term: execution paths routed through KiLu-controlled runtimes (Linux Hub, gateway adapters), SDK provides the intent/receipt contract
-
-## Integration Position in the Ecosystem
-
-```
-External Agent / Planner
-        │
-        │  submitIntent()
-        ▼
-   [ kilu-sdk ]  ◄── you are here
-        │
-        │  Authorization decision
-        ▼
-   KiLu Control Plane  (KiLu-Network)
-        │
-        ├── Android Approver  (kilu-pocket-agent) — human authority
-        └── Hub runtime — execution under grant
-```
-
-| Component | Role |
-|---|---|
-| **kilu-sdk** (this) | Public TypeScript integration surface |
-| **KiLu-Network** | Canonical control-plane and operational repo |
-| **kilu-pocket-agent** | Android authority device and validation runtime wedge |
-| **Linux/gateway runtimes** | Production execution direction |
-
-## Related Repositories
-
-- **[KiLu-Network](https://github.com/IkaRiche/KiLu-Network)** — canonical operational repo, control plane, governance docs, ecosystem map
-- **[kilu-pocket-agent](https://github.com/IkaRiche/kilu-pocket-agent)** — Android authority device (Approver) and validation runtime (Hub)
-- **[KiLu / DeTAK](https://github.com/IkaRiche/KiLu)** — protocol and authority primitives
-
-## Practical Reading Guide
-
-- **read this repo** if you want to integrate an external agent or planner into KiLu's authority model
-- **read `kilu-pocket-agent`** if you want to understand the Android authority device and validation runtime
-- **read `KiLu-Network`** if you want the live operational picture, current deployment topology, and governance docs
-
----
-
-## Core Thesis
-
-Your agent may propose an action.  
-KiLu decides whether that action may proceed.  
-The SDK is the bridge between those two worlds.
-
----
-
-KiLU® and DeTAK™ are trademarks.
+**KiLu is the authority layer for autonomous execution.**
 
 ## License
 
-MIT
+TBD
