@@ -8,12 +8,14 @@ Add an `ALLOW / REQUIRE_CONFIRM / BLOCK` policy gate *before* your agent execute
 
 > **Status:** Early, usable. Real control plane path available. Decisions durably recorded.
 
-```
-┌─────────┐     ┌──────────────────┐     ┌──────────┐     ┌─────────────────────────────────┐
-│  Agent   │────▶│  Proposed Action  │────▶│   KiLu   │────▶│  ALLOW / REQUIRE_CONFIRM / BLOCK │
-│ (model)  │     │  (tool, browser,  │     │ (policy  │     │                                 │
-│          │     │   shell, API)     │     │  gate)   │     │  ✅ Execute  ⏸ Pause  🚫 Block  │
-└─────────┘     └──────────────────┘     └──────────┘     └─────────────────────────────────┘
+```mermaid
+flowchart LR
+    A["🤖 Agent\n(model)"] --> B["⚙️ Proposed Action\n(tool, browser, shell, API)"]
+    B --> C{"🛡️ KiLu\n(policy gate)"}
+    
+    C -- "ALLOW" --> D["✅ Execute"]
+    C -- "REQUIRE_CONFIRM" --> E["⏸ Pause"]
+    C -- "BLOCK" --> F["🚫 Block"]
 ```
 
 ---
