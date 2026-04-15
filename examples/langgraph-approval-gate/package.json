@@ -1,0 +1,16 @@
+{
+  "name": "@kilu/example-langgraph-approval-gate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "KiLu authority gate for LangGraph tool execution",
+  "scripts": {
+    "dev": "npx tsx src/run.ts"
+  },
+  "dependencies": {
+    "@langchain/langgraph": "^0.2.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
