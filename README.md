@@ -1,12 +1,12 @@
-[![npm version](https://img.shields.io/npm/v/@kilu-control/sdk.svg)](https://www.npmjs.com/package/@kilu-control/sdk)
-[![license](https://img.shields.io/npm/l/@kilu-control/sdk.svg)](./LICENSE)
-[![examples](https://img.shields.io/badge/examples-3%20live%20proofs-blue)](./examples/)
+# KiLu SDK
+
+[![CI](https://github.com/IkaRiche/kilu-sdk/actions/workflows/test.yml/badge.svg)](https://github.com/IkaRiche/kilu-sdk/actions/workflows/test.yml)
 
 **Agents decide. KiLu authorizes.**
 
 Add an `ALLOW / REQUIRE_CONFIRM / BLOCK` policy gate *before* your agent executes anything — tool calls, browser actions, shell commands, or API mutations.
 
-> **Status:** Published on npm · 3 live proofs · Real control plane path · Decisions durably recorded.
+> **Status:** Early, usable. Real control plane path available. Decisions durably recorded.
 
 ```
 ┌─────────┐     ┌──────────────────┐     ┌──────────┐     ┌─────────────────────────────────┐
@@ -19,6 +19,7 @@ Add an `ALLOW / REQUIRE_CONFIRM / BLOCK` policy gate *before* your agent execute
 ---
 
 ## 🚀 Quickstart
+
 ```bash
 npm install @kilu-control/sdk
 ```
@@ -56,46 +57,38 @@ async function executeAgentTool(toolName: string, args: Record<string, any>) {
 ---
 
 ## ⚡ Live Integration Proofs
+
 Every example runs locally with a mock authority layer — or connects to a **real production control plane** when `KILU_API_KEY` is set.
 
 ### 🛠️ MCP Tool Gate
 Wrap MCP tool handlers so destructive actions pause for human approval before execution.
 → [`examples/mcp-tool-gate`](./examples/mcp-tool-gate/)
 
-<a href="https://kilu.network/mcp-tool-gating">
-  <img src="https://kilu.network/assets/videos/mcp-demo-v2.webp" alt="KiLu MCP Tool Gating — ALLOW / REQUIRE_CONFIRM / BLOCK" width="720" />
-</a>
-
 ### 🤖 LangGraph Approval Gate
 Drive LangGraph's `interrupt()` flow with a deterministic policy gate instead of fragile prompt checks.
 → [`examples/langgraph-approval-gate`](./examples/langgraph-approval-gate/)
-
-<a href="https://kilu.network/langgraph-approval">
-  <img src="https://kilu.network/assets/videos/langgraph-demo-v2.webp" alt="KiLu LangGraph Approval Gate — deterministic interrupt()" width="720" />
-</a>
 
 ### 🌐 Browser Action Control
 Intercept Playwright/Puppeteer actions with a `beforeAction()` hook to prevent autonomous hallucinations.
 → [`examples/browser-approval`](./examples/browser-approval/)
 
-<a href="https://kilu.network/browser-action-control">
-  <img src="https://kilu.network/assets/videos/browser-demo-v2.webp" alt="KiLu Browser Action Control — per-click gate" width="720" />
-</a>
-
 ---
 
 ## How KiLu Compares
+
 | Approach | What it does | What it misses |
 |---|---|---|
 | Prompt guardrails | Hints the model via system prompt | Fragile, bypassable, no enforcement |
 | Logs / audit trails | Records what happened | Too late — damage already done |
 | HITL on every action | Adds manual review | Approval fatigue, no policy semantics |
 | `securitySchemes` / OAuth | Controls access to APIs | No per-action policy, no decision audit |
+| Custom decorators / wrappers | Adds local checks around sensitive tools | Fragmented policy, duplicated logic, weak consistency, poor auditability |
 | **KiLu** | **Decides before execution** | **Authority layer with receipts** |
 
 ---
 
 ## Typical Outcomes
+
 | Outcome | When | Example |
 |---|---|---|
 | **`ALLOW`** | Low-risk action within policy | `file.read`, `browser.hover`, `mcp.read` |
@@ -105,6 +98,7 @@ Intercept Playwright/Puppeteer actions with a `beforeAction()` hook to prevent a
 ---
 
 ## Use Cases
+
 **Use KiLu when your agent currently...**
 
 - 🔧 Calls MCP tools directly without context checks
@@ -116,6 +110,7 @@ Intercept Playwright/Puppeteer actions with a `beforeAction()` hook to prevent a
 ---
 
 ## What KiLu Is Not
+
 KiLu is **not** a chat agent, planner, workflow builder, or browser automation wrapper.
 
 KiLu is strictly the **authority layer** for autonomous execution.
@@ -124,6 +119,7 @@ Your model proposes actions. KiLu decides whether they run.
 ---
 
 ## Trust & Verification
+
 - ✅ 3 runnable integration proofs (MCP, LangGraph, Browser)
 - ✅ Mock authority for local development
 - ✅ Real production control plane path (`POST /v1/intent`)
@@ -133,7 +129,16 @@ Your model proposes actions. KiLu decides whether they run.
 
 ---
 
+## Documentation
+
+- [API Reference](./docs/api-reference.md) — SDK API surface & core types
+- [Receipts & Verification](./docs/receipts-and-verification.md) — How the cryptographic receipts work
+- [Architecture & Reasoning](./docs/why-kilu.md) — Why KiLu is built this way
+
+---
+
 ## FAQ
+
 <details>
 <summary><strong>Is KiLu another agent framework?</strong></summary>
 
@@ -167,6 +172,7 @@ Yes. The SDK connects to a production Cloudflare Worker endpoint. Decisions are 
 ---
 
 ## Repository Structure
+
 ```
 kilu-sdk/
 ├── src/                          # SDK source
@@ -175,11 +181,14 @@ kilu-sdk/
 │   ├── langgraph-approval-gate/  # LangGraph integration proof
 │   └── browser-approval/         # Browser automation proof
 ├── docs/
-│   └── why-kilu.md               # Architecture and reasoning model
+│   ├── why-kilu.md               # Architecture and reasoning model
+│   ├── api-reference.md          # SDK API surface & types
+│   └── receipts-and-verification.md # Deep-dive on cryptographic receipts
 └── LICENSE
 ```
 
 ---
 
 ## License
+
 MIT © [KiLu Network](https://kilu.network)
