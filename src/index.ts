@@ -18,11 +18,20 @@ export { ApiError, AuthError, RateLimitError } from "./errors";
 export {
     ExecutionReceipt,
     IntentPayload,
-    AuthorizationDecision,
     AuthorizationResult,
     verifyReceipt,
-    verifyReceiptForIntent
+    verifyReceiptForIntent,
 } from "./receipt";
+
+// Canonical outcome type (new)
+export type { AuthorizationOutcome } from "./receipt";
+
+// Normalization helpers (for custom integrations)
+export { normalizeOutcome, normalizeAuthResult } from "./receipt";
+
+// Backward-compat: deprecated type re-export
+/** @deprecated Use AuthorizationOutcome instead */
+export type { AuthorizationDecision } from "./receipt";
 
 // Reference canonicalization (for verification only)
 export { canonicalize } from "./canonical";

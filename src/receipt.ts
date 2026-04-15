@@ -12,7 +12,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex as toHex, hexToBytes } from "@noble/hashes/utils.js";
 import * as ed from "@noble/ed25519";
 
-// --- PUBLIC TYPES ---
+// --- PUBLIC TYPES (canonical naming) ---
 
 export interface ExecutionReceipt {
     intent_hash: string;
@@ -23,22 +23,88 @@ export interface ExecutionReceipt {
 }
 
 export interface IntentPayload {
+    /** Identity of the acting agent or service */
+    actor?: string;
+    /** Action being proposed (e.g. "browser.click", "shell.exec", "email.send") */
     action: string;
+    /** Target of the action (e.g. selector, command, URL) */
     target?: string;
+    /** Optional monetary amount */
     amount?: number;
+    /** Optional currency code */
     currency?: string;
+    /** Arbitrary structured context */
+    context?: Record<string, any>;
+    /** Legacy: additional params */
     params?: Record<string, any>;
     [key: string]: any;
 }
 
-export type AuthorizationDecision = "ALLOW" | "DENY" | "HUMAN_APPROVAL_REQUIRED";
+/**
+ * Canonical authorization outcomes.
+ * 
+ * - ALLOW: action may execute immediately
+ * - REQUIRE_CONFIRM: action requires explicit human approval
+ * - BLOCK: action is not admissible under current policy
+ */
+export type AuthorizationOutcome = "ALLOW" | "REQUIRE_CONFIRM" | "BLOCK";
 
 export interface AuthorizationResult {
-    decision: AuthorizationDecision;
+    /** Canonical outcome of the authorization decision */
+    outcome: AuthorizationOutcome;
+    /** Unique decision identifier for audit trail */
+    decisionId?: string;
+    /** Execution receipt (present when outcome = ALLOW) */
     receipt?: ExecutionReceipt;
     /** Generic reason code (no internal policy details exposed) */
     reason?: string;
+    /** Approval flow ID (present when outcome = REQUIRE_CONFIRM) */
     pending_approval_id?: string;
+}
+
+// --- BACKWARD COMPATIBILITY ---
+
+/**
+ * @deprecated Use AuthorizationOutcome instead.
+ * Maps old server values to new canonical names.
+ */
+export type AuthorizationDecision = "ALLOW" | "DENY" | "HUMAN_APPROVAL_REQUIRED";
+
+/**
+ * Normalize inbound server response to canonical outcome names.
+ * Accepts both old naming (DENY, HUMAN_APPROVAL_REQUIRED, decision)
+ * and new naming (BLOCK, REQUIRE_CONFIRM, outcome).
+ * 
+ * Public SDK surface always returns new naming.
+ */
+export function normalizeOutcome(raw: string): AuthorizationOutcome {
+    switch (raw) {
+        case "ALLOW":
+            return "ALLOW";
+        case "BLOCK":
+        case "DENY":
+            return "BLOCK";
+        case "REQUIRE_CONFIRM":
+        case "HUMAN_APPROVAL_REQUIRED":
+            return "REQUIRE_CONFIRM";
+        default:
+            return "BLOCK"; // fail-closed on unknown
+    }
+}
+
+/**
+ * Normalize a raw server response object to canonical AuthorizationResult.
+ * Handles both old field names (decision) and new (outcome).
+ */
+export function normalizeAuthResult(raw: any): AuthorizationResult {
+    const outcomeRaw = raw.outcome || raw.decision || "BLOCK";
+    return {
+        outcome: normalizeOutcome(outcomeRaw),
+        decisionId: raw.decisionId || raw.decision_id,
+        receipt: raw.receipt,
+        reason: raw.reason,
+        pending_approval_id: raw.pending_approval_id,
+    };
 }
 
 // --- PUBLIC VERIFICATION HELPERS ---
