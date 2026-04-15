@@ -9,7 +9,14 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { KiluClient } from "@kilu-control/sdk";
 import { mockAuthorize, type KiluIntent, type KiluDecision } from "./kilu-mock.js";
+
+// Initialize the real KiLu client. It will only be used if KILU_API_KEY is provided.
+const kiluClient = new KiluClient({
+    baseUrl: process.env.KILU_BASE_URL || "http://localhost:8787",
+    apiKey: process.env.KILU_API_KEY,
+});
 
 // ─────────────────────────────────────────────
 // KiLu Gate Wrapper
@@ -35,7 +42,7 @@ function withKiluGate<TArgs extends Record<string, unknown>>(
 ) {
     return async (args: TArgs) => {
         // Build intent from tool call
-        const intent: KiluIntent = {
+        const intent = {
             actor: intentBase.actor,
             action: intentBase.action,
             target: JSON.stringify(args),
@@ -43,8 +50,12 @@ function withKiluGate<TArgs extends Record<string, unknown>>(
         };
 
         // ── KiLu authority check ──
-        // Replace with: const decision = await client.submitIntent(intent);
-        const decision: KiluDecision = mockAuthorize(intent);
+        let decision;
+        if (process.env.KILU_API_KEY) {
+            decision = await kiluClient.submitIntent(intent);
+        } else {
+            decision = mockAuthorize(intent);
+        }
 
         console.log(`  ├─ KiLu decision: ${decision.outcome}${decision.reason ? ` (${decision.reason})` : ""}`);
         console.log(`  ├─ Decision ID:   ${decision.decisionId}`);

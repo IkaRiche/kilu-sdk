@@ -1,24 +1,40 @@
 {
-    "name": "@kilu/sdk",
-    "version": "0.1.0",
-    "description": "TypeScript SDK for Kilu DeTAK Protocol",
+    "name": "@kilu-control/sdk",
+    "version": "0.2.1",
+    "description": "Execution authority layer for AI agents — ALLOW / REQUIRE_CONFIRM / BLOCK policy gate before tool calls, browser actions, or agent executions",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch",
-        "test": "bun test"
+        "test": "bun test",
+        "prepublishOnly": "npm run build"
     },
     "keywords": [
         "kilu",
-        "detak",
         "agent",
         "authority",
+        "execution",
+        "policy",
+        "mcp",
+        "langgraph",
+        "browser-use",
+        "ai-safety",
         "sdk"
     ],
-    "author": "Kilu Team",
+    "author": "KiLu Network",
     "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/IkaRiche/kilu-sdk"
+    },
+    "homepage": "https://kilu.network",
     "devDependencies": {
         "@types/node": "^20.0.0",
         "bun-types": "^1.0.0",
