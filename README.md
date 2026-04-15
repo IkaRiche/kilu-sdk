@@ -1,10 +1,14 @@
 # KiLu SDK
 
+[![npm version](https://img.shields.io/npm/v/@kilu-control/sdk.svg)](https://www.npmjs.com/package/@kilu-control/sdk)
+[![license](https://img.shields.io/npm/l/@kilu-control/sdk.svg)](./LICENSE)
+[![examples](https://img.shields.io/badge/examples-3%20live%20proofs-blue)](./examples/)
+
 **Agents decide. KiLu authorizes.**
 
 Add an `ALLOW / REQUIRE_CONFIRM / BLOCK` policy gate *before* your agent executes anything — tool calls, browser actions, shell commands, or API mutations.
 
-> **Status:** Early, usable. Real control plane path available. Decisions durably recorded.
+> **Status:** Published on npm · 3 live proofs · Real control plane path · Decisions durably recorded.
 
 ```
 ┌─────────┐     ┌──────────────────┐     ┌──────────┐     ┌─────────────────────────────────┐
