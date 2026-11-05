@@ -1,5 +1,7 @@
 # KiLu SDK API Reference
 
+> **Authority boundary (2026-11-05):** `submitIntent()` addresses the legacy `/v1/intent` API. A returned `ALLOW` or `ExecutionReceipt` must **not** authorize actual execution; neither is a scoped single-use grant nor an execution outcome receipt. Use the canonical KiLu approval → grant → bound Runner → execution report → receipt path. A replacement SDK adapter is not yet verified.
+
 The `@kilu-control/sdk` package exports a single `KiluClient` for submitting execution intents, along with typescript interfaces for payload shaping and methods for client-side receipt verification.
 
 ## `KiluClient`
@@ -107,8 +109,8 @@ async function runGatedTool(toolName: string, args: any) {
 
   switch (auth.outcome) {
     case 'ALLOW':
-      console.log('Authorized. Receipt:', auth.receipt);
-      return actuallyRunTool(toolName, args);
+      // Legacy intent decision only: no canonical grant.
+      throw new Error('Canonical executor-bound grant required');
       
     case 'REQUIRE_CONFIRM':
       console.log('Paused for human approval:', auth.pending_approval_id);
