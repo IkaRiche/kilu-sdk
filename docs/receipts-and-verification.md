@@ -1,5 +1,7 @@
 # Receipts and Verification
 
+> **Authority boundary (2026-11-05):** This document describes the legacy SDK's `ExecutionReceipt` type and intent-hash signature check. Despite the historical type name, this is **not** a canonical KiLu post-execution receipt and does **not** carry bounded execution authority. The proper grant is minted after signed approval, checked by the bound executor (scope, TTL, JTI, runtime/toolchain), and is followed by an execution report and Trust Center receipt. No action may be executed merely because `verifyReceiptForIntent()` succeeds. Previously published copies may use earlier terminology.
+
 In the KiLu architecture, the control plane does not execute actions. Instead, it issues a **cryptographic receipt** when an agent's intent is authorized under the active policy.
 
 This document explains what these receipts are, how they work, and what security guarantees they actually provide.
@@ -72,5 +74,5 @@ if (!valid) {
     throw new Error(`Execution blocked: invalid receipt (${error})`);
 }
 
-// Safe to proceed
+// Signature matches the intent only; STOP until the canonical execution grant has been independently validated.
 ```
