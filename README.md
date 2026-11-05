@@ -53,8 +53,9 @@ async function executeAgentTool(toolName: string, args: Record<string, any>) {
     return triggerHumanApprovalFlow(intent, auth.pending_approval_id);
   }
 
-  // ALLOW -> execute with cryptographic receipt
-  return doActualExecution(toolName, args);
+  // Legacy SDK ALLOW is not a canonical execution grant.
+  // Do not execute side-effectful tools on this decision alone.
+  throw new Error('Canonical executor-bound grant required before execution');
 }
 ```
 
