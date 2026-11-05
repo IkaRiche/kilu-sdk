@@ -2,11 +2,11 @@
 
 [![CI](https://github.com/IkaRiche/kilu-sdk/actions/workflows/test.yml/badge.svg)](https://github.com/IkaRiche/kilu-sdk/actions/workflows/test.yml)
 
-**Agents decide. KiLu authorizes.**
+**Agent execution authority SDK — evaluation-stage integration surface.**
 
 KiLu is an execution authority layer for AI systems. It places an explicit decision boundary before tool calls, browser actions, and other high-risk execution paths.
 
-> **Status:** Published SDK · Runnable examples · Real control plane path · Durable decision records
+> **Status:** SDK v0.2.1 published; current source under proprietary notice. Example integrations use mocks and do not demonstrate the full canonical grant → bounded execution → signed report → receipt protocol. The legacy `/v1/intent` route is not execution authority.
 
 ```mermaid
 flowchart LR
@@ -60,7 +60,7 @@ async function executeAgentTool(toolName: string, args: Record<string, any>) {
 
 ---
 
-## ⚡ Live Integration Proofs
+## Integration Examples (mock-based; not production authority proofs)
 
 ### 🛠️ MCP Tool Gate
 Wrap MCP tool handlers so destructive actions pause for human approval before execution.
@@ -77,7 +77,7 @@ Intercept Playwright/Puppeteer actions with a `beforeAction()` hook to prevent a
 <br><img src="https://kilu.network/assets/videos/browser-demo-v2.webp" alt="Browser Approval" width="600"/>
 → [`examples/browser-approval`](./examples/browser-approval/)
 
-All examples run locally with a mock authority layer and can be pointed at a real KiLu control plane.
+All examples include local mock authority. Connecting to the legacy `/v1/intent` API does **not** provide canonical execution authorization or post-execution receipts. Do not allow real side-effectful tool execution from an `ALLOW` decision unless a scoped, single-use grant has been verified by the executor through the canonical KiLu protocol.
 
 ---
 
@@ -139,11 +139,11 @@ Your model proposes actions. KiLu decides whether they run.
 
 ## Trust & Verification
 
-- ✅ 3 runnable integration proofs (MCP, LangGraph, Browser)
+- 3 illustrative integration examples (MCP, simulated LangGraph, Browser), mostly mock-backed
 - ✅ Mock authority for local development
-- ✅ Real production control plane path (`POST /v1/intent`)
-- ✅ Ed25519-signed execution receipts
-- ✅ Durable decision log (D1-backed audit trail)
+- Legacy control plane intent endpoint (`POST /v1/intent`), non-authoritative; fail-closed hardening under review
+- SDK Ed25519 intent-signature verification helper; a signed pre-execution intent is **not** a post-execution receipt
+- Audit persistence is part of the legacy cloud route; end-to-end execution evidence requires the canonical Trust Center / Runner / Verifier path
 - ✅ Deterministic policy evaluation (no LLM in the decision path)
 
 Read more: [API Reference](./docs/api-reference.md) · [Receipts & Verification](./docs/receipts-and-verification.md) · [Examples](./examples/README.md)
@@ -179,13 +179,13 @@ The action is valid but needs explicit human approval before execution. Forward 
 <details>
 <summary><strong>Can I run it against a real control plane?</strong></summary>
 
-Yes. Decisions are durably recorded via Cloudflare Workers and signed with Ed25519 receipts.
+The legacy endpoint is not sufficient for authorizing real execution. Use the separately verified KiLu Trust Center → grant → bound Runner → execution report → receipt path.
 </details>
 
 ---
 
-Status: early, usable, and actively evolving. Real control plane path available.
+Status: evaluation-stage SDK; complete canonical authority integration remains unverified.
 
 ## License
 
-MIT © [KiLu Network](https://kilu.network)
+The current repository revision is proprietary and does not grant a general-use license. See [LICENSE](./LICENSE). Earlier distributed versions or copies may retain rights granted under their accompanying licenses.
